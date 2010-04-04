@@ -1,0 +1,2 @@
+class ItemNotTagstarMaintained(Exception):
+    pass

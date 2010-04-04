@@ -1,0 +1,16 @@
+Check out or download the code
+git clone http://github.com/geomin/django-tagstar.git
+
+1. Add the path to PYTHONPATH
+
+2. Add 'tagstar' in your settings:
+
+INSTALLED_APPS = (
+    #...
+    'tagstar',
+    #...
+)
+
+3. Run ./manage.py syncdb
+
+Ready!
