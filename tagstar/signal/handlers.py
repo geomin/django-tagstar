@@ -30,7 +30,7 @@ def item_created(sender, instance, created, **kwargs):
 def item_deleted(sender, instance, **kwargs):
     if tagstar.utils.is_tagstar_maintained(instance):
         instance.update_tags('')
-    else:
+    elif isinstance(instance, tagstar.models.Item):
         model_tag = tagstar.models.ModelTag.objects.get(tag=instance.tag, content_type=instance.content_type)
         tagstar.models.ModelTag.objects.filter(pk=model_tag.pk).update(count=F('count')-1)
 
