@@ -6,6 +6,6 @@ Generic tagging application for Django
 
 You can tag any item you want in your application.
 
-The query-chain wont break, everthing is as you except!
+The query-chain wont break, everthing is as to be expected!
 
 Works >= 1.0
