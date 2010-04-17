@@ -3,7 +3,7 @@ from tagstar.models import Item, Tag, ModelTag
 from tagstar.signal.signals import item_tagged
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Count
-from tagstar.utils import is_string, is_list_or_tuple, string_to_list, is_tagstar_maintained
+from tagstar.utils import is_string, is_list_or_tuple, string_to_list, is_tagstar_maintained, escape_tags
 from django.db.models import Q
 from tagstar.exceptions import ItemNotTagstarMaintained
 
@@ -44,8 +44,9 @@ class ItemManager(models.Manager):
         if is_string(tags):
             tags = tags.split(',')
 
+        tags = escape_tags(tags)
         tags = '|'.join(tags)
-
+        
         qs = self.model.objects.filter(**{'%s__regex' % self.model._tags_field_name: r'(%s)' % tags })
 
         if instance is not None:
@@ -66,6 +67,7 @@ class ItemManager(models.Manager):
         if is_string(tags):
             tags = tags.split(',')
 
+        tags = escape_tags(tags)
         tags = '|'.join(tags)
 
         q = Q(tags__regex=r'(%s)' % tags) | q
