@@ -82,7 +82,6 @@ class ItemManager(models.Manager):
             tags = string_to_list(tags)
 
         new_tags = [ Tag.objects.get_or_create(name=x.strip().lower())[0] for x in (set(tags) - set(instance.tags_list)) if x.strip() ]
-
         self._add_tags(instance, new_tags)
 
     def _add_tags(self, instance, new_tags):
@@ -161,10 +160,10 @@ class ItemManager(models.Manager):
         tags_string   = ",".join(tags)
 
         if instance_tags != tags:          
-            new_tags      = tags - instance_tags
-            obsolete_tags = instance_tags - tags
-            
-            self.add_tags(instance, new_tags)
-            self.remove_tags(instance, obsolete_tags)
+            new_tags      = [ Tag.objects.get_or_create(name=x.strip().lower())[0] for x in (tags - instance_tags) if x.strip() ]
+            obsolete_tags = Tag.objects.filter(name__in=(instance_tags - tags) )
+
+            self._add_tags(instance, new_tags)
+            self._remove_tags(instance, obsolete_tags)
             
         return tags
