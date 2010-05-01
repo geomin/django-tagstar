@@ -94,7 +94,7 @@ class ItemManager(models.Manager):
             Item.objects.create(content_object=instance, tag=x)
 
         tags = (instance.tags_list + [x.name for x in new_tags])
-        tags_str = ",".join(tags)
+        tags_str = ",".join(set(tags))
 
         setattr(instance, instance._tags_field_name, tags_str)
         instance.__class__.objects.filter(pk=instance.pk).update(tags=tags_str)

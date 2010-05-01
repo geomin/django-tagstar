@@ -10,8 +10,6 @@ def item_tagged(sender, content_type, action, instance, tags, **kwargs):
         tagstar.models.Tag.objects.filter(pk__in=tags_ids).update(count=F('count')+1)
 
 def post_save(sender, instance, created, **kwargs):
-    #if not created:
-     #   return
     if hasattr(instance, '_tags_field_name'):
         tags = getattr(instance, instance._tags_field_name)
         instance.update_tags(tags)
