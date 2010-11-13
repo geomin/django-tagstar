@@ -92,13 +92,8 @@ class ItemManager(models.Manager):
         #Create mapping
         for x in new_tags:
             Item.objects.create(content_object=instance, tag=x)
-
+        
         tags = set(instance.tags_list + [x.name for x in new_tags])
-        tags_str = ",".join(tags)
-
-        setattr(instance, instance._tags_field_name, tags_str)
-        instance.__class__.objects.filter(pk=instance.pk).update(tags=tags_str)
-        instance._init_tags = tags_str
 
         #send signal
         item_tagged.send(sender=self.model, action='create', content_type=ctype, tags=new_tags, instance=instance)
@@ -134,12 +129,7 @@ class ItemManager(models.Manager):
                             ).delete()
 
         new_tags = set(instance.tags_list) - set([x.name for x in tags]) 
-        tags_str = ",".join(new_tags)
         
-        setattr(instance, instance._tags_field_name, tags_str )
-        instance.__class__.objects.filter(pk=instance.pk).update(tags=tags_str)
-        instance._init_tags = tags_str
-
         #send signal
         item_tagged.send(sender=self.model, action='remove', content_type=ctype, tags=tags, instance=instance)
 
@@ -151,18 +141,16 @@ class ItemManager(models.Manager):
         """
         if not is_tagstar_maintained(instance):
             raise ItemNotTagstarMaintained("Item %s is not under Tagstar" % instance.__class__)
-
+        
         if is_string(tags):
             tags = string_to_list(tags)
 
-        tags          = set(tags)
-        instance_tags = instance._init_tags and set(instance._init_tags.split(',')) or set()        
-        tags_string   = ",".join(tags)
-
+        tags          = set([x.strip().lower() for x in tags])        
+        instance_tags = instance._init_tags and set([ x.strip().lower() for x in instance._init_tags.split(',')]) or set()        
+        
         if instance_tags != tags:          
-            new_tags      = [ Tag.objects.get_or_create(name=x.strip().lower())[0] for x in (tags - instance_tags) if x.strip() ]
+            new_tags      = set( Tag.objects.get_or_create(name=x.strip().lower())[0] for x in (tags - instance_tags) if x.strip() )
             obsolete_tags = Tag.objects.filter(name__in=(instance_tags - tags) )
-
             self._add_tags(instance, new_tags)
             self._remove_tags(instance, obsolete_tags)
             

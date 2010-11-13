@@ -12,7 +12,11 @@ def item_tagged(sender, content_type, action, instance, tags, **kwargs):
 def post_save(sender, instance, created, **kwargs):
     if hasattr(instance, '_tags_field_name'):
         tags = getattr(instance, instance._tags_field_name)
-        instance.update_tags(tags)
+        tags = instance.update_tags(tags)
+        tags_str = ",".join(tags)
+        instance.__class__.objects.filter(pk=instance.pk).update( **{'%s'% instance._tags_field_name: tags_str} )
+        instance._init_tags = tags_str
+        setattr(instance, instance._tags_field_name, tags_str)
 
 def post_init(sender, instance, **kwargs):
     if hasattr(instance, '_tags_field_name'):    
