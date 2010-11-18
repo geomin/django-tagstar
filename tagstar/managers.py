@@ -1,8 +1,7 @@
 from django.db import models
-from tagstar.models import Item, Tag, ModelTag
+from tagstar.models import Item, Tag
 from tagstar.signal.signals import item_tagged
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Count
 from tagstar.utils import is_string, is_list_or_tuple, string_to_list, is_tagstar_maintained, escape_tags
 from django.db.models import Q
 from tagstar.exceptions import ItemNotTagstarMaintained
@@ -81,8 +80,10 @@ class ItemManager(models.Manager):
         if is_string(tags):
             tags = string_to_list(tags)
 
-        new_tags = [ Tag.objects.get_or_create(name=x.strip().lower())[0] for x in (set(tags) - set(instance.tags_list)) if x.strip() ]
-        self._add_tags(instance, new_tags)
+        delta = [x.strip().lower() for x in (set(tags) - set(instance.tags_list)) if x.strip()]
+        new_tags = [ Tag.objects.get_or_create(name=x)[0] for x in set(delta) ]
+
+        return self._add_tags(instance, new_tags)
 
     def _add_tags(self, instance, new_tags):
         if not new_tags:
@@ -92,15 +93,12 @@ class ItemManager(models.Manager):
         #Create mapping
         for x in new_tags:
             Item.objects.create(content_object=instance, tag=x)
-        
-        tags = set(instance.tags_list + [x.name for x in new_tags])
-
         #send signal
         item_tagged.send(sender=self.model, action='create', content_type=ctype, tags=new_tags, instance=instance)
 
-        return new_tags
+        return [x.name for x in new_tags]
 
-    def remove_tags(self, instace, tags):
+    def remove_tags(self, instance, tags):
         """
         Remove given tags
         """
@@ -108,14 +106,14 @@ class ItemManager(models.Manager):
             tags = string_to_list(tags)
 
         tags = set([x.strip().lower() for x in tags if x.strip() ])
-        tags = [x for x in instace.tags_list for y in tags if x == y]
+        tags = [x for x in tags if x in instance.tags_list]
 
         if not tags:
             return []
 
         obsolete_tags = Tag.objects.filter(name__in=tags )
 
-        self._remove_tags(instace, obsolete_tags)
+        return self._remove_tags(instance, obsolete_tags)
 
     def _remove_tags(self, instance, tags):
         if not tags:
@@ -128,23 +126,24 @@ class ItemManager(models.Manager):
                             tag__in=[x.pk for x in tags]
                             ).delete()
 
-        new_tags = set(instance.tags_list) - set([x.name for x in tags]) 
-        
         #send signal
         item_tagged.send(sender=self.model, action='remove', content_type=ctype, tags=tags, instance=instance)
 
-        return tags
+        return [x.name for x in tags]
 
     def update_tags(self, instance, tags):
         """
         Update tags from an item
         """
+        if not tags:
+            return []
+
         if not is_tagstar_maintained(instance):
             raise ItemNotTagstarMaintained("Item %s is not under Tagstar" % instance.__class__)
         
         if is_string(tags):
             tags = string_to_list(tags)
-
+        
         tags          = set([x.strip().lower() for x in tags])        
         instance_tags = instance._init_tags and set([ x.strip().lower() for x in instance._init_tags.split(',')]) or set()        
         
@@ -154,4 +153,4 @@ class ItemManager(models.Manager):
             self._add_tags(instance, new_tags)
             self._remove_tags(instance, obsolete_tags)
             
-        return tags
+        return list(tags)

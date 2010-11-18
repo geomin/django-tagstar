@@ -10,7 +10,7 @@ class Tag(models.Model):
     count = models.PositiveIntegerField(default=0)      #how many times was this tagged
 
     def __unicode__(self):
-        return "%s - %d" % (self.name, self.count)
+        return u"%s - %d" % (self.name, self.count)
     
 class Item(models.Model):
     tag             = models.ForeignKey(Tag)
@@ -23,7 +23,7 @@ class Item(models.Model):
         unique_together = (('tag', 'content_type', 'object_id'),)
     
     def __unicode__(self):
-        return "%s - {%s}" % (self.content_type.name, self.tag) 
+        return u"%s - {%s}" % (self.content_type.name, self.tag)
 
 class ModelTag(models.Model):
     tag          = models.ForeignKey(Tag)
@@ -38,3 +38,11 @@ post_save.connect(handlers.item_created, sender=Item)
 post_delete.connect(handlers.item_deleted)
 post_save.connect(handlers.post_save)
 post_init.connect(handlers.post_init)
+
+from tagstar.db.fields import TagsField
+class Fruit(models.Model):
+    name = models.CharField(max_length=32)
+    tags = TagsField()
+    
+    def __unicode__(self):
+        return u"%s <%s>" % (self.name, self.tags)
