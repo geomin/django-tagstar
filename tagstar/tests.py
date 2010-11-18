@@ -131,6 +131,15 @@ class TagStarTestCase(test.TestCase):
         self.assertEqual(len(orange.tags_list), len(should))
         self.assertEqual(set(orange.tags_list), set(should))
 
+    def test_9a_save(self):
+        orange = Fruit(name='orange')
+        orange.tags = "sweet,juicy,healthy,Healthy,HealthY,HeaLthY"
+        orange.save()
+        should = ['sweet','juicy','healthy']
+
+        self.assertEqual(len(orange.tags_list), len(should))
+        self.assertEqual(set(orange.tags_list), set(should))
+
     def test_10_model_tag(self):
         orange = Fruit(name='orange')
         orange.tags = "sweet,juicy,healthy"

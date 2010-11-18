@@ -1,7 +1,7 @@
 In your application
 
 --- model.py ----
-
+```python
 from django.db import models
 from tagstar.db.fields import TagsField 
 
@@ -9,95 +9,100 @@ class Human(models.Model):
     name = models.CharField(max_length=32)
     tags = TagsField()
     born_date = models.DateField()
-
+```
 Run ./manage.py
 
 Example:
 
 """ Create an object """
->> h = Human.objects.create(name='John', born_date=datetime.datetime(1967,2,5))
-""" Add dome tags"""
->> h.add_tags('man,tall')
-"""Get current tags"""
->> h.tags_list
-['tall', 'man']
-"""Get tags as Tag objects """
->> h.get_tags()
-[<Tag: tall - 1>, <Tag: man - 1>]
-"""Add other tag """
->> h.add_tags('brunette')
 
->> h.get_tags()
+```python >>> h = Human.objects.create(name='John', born_date=datetime.datetime(1967,2,5))```
+
+""" Add dome tags"""
+
+```python >>> h.add_tags('man,tall')```
+
+"""Get current tags"""
+
+```python >>> h.tags_list```
+['tall', 'man']
+
+"""Get tags as Tag objects """
+
+```python >>> h.get_tags()```
+[<Tag: tall - 1>, <Tag: man - 1>]
+
+"""Add other tag """
+
+```python >>> h.add_tags('brunette')```
+```python >>> h.get_tags()```
+
 [<Tag: tall - 1>, <Tag: man - 1>, <Tag: brunette - 1>]
 
->> h.tags_list
+```python >>> h.tags_list```
 ['tall', 'man', 'brunette']
 
 """Create second object """
->> w = Human.objects.create(name='Mina', born_date=datetime.datetime(1976,11,2))
-
->> w.add_tags('woman,nice')
-
->> w.tags_list
+```python >>> w = Human.objects.create(name='Mina', born_date=datetime.datetime(1976,11,2))```
+```python >>> w.add_tags('woman,nice')```
+```python >>> w.tags_list```
 ['woman', 'nice']
 
->> w.add_tags('brunette')
-
->> w.tags_list
+```python >>> w.add_tags('brunette')```
+```python >>> w.tags_list```
 [u'woman', u'nice', u'brunette']
 
->> w.get_tags()
+```python >>> w.get_tags()```
 [<Tag: woman - 1>, <Tag: nice - 1>, <Tag: brunette - 2>]
 
 """Get related objects """
-w.get_related()
+
+```python >>> w.get_related()```
 [<Human: John>]
  
->> c = Human.objects.create(name='Cath', born_date=datetime.datetime(1999,9,5))
+```python >>> c = Human.objects.create(name='Cath', born_date=datetime.datetime(1999,9,5))```
 
 """Get items without tags """
->> Human.objects.get_tagless_items()
+
+```python >>> Human.objects.get_tagless_items()```
 [<Human: Cath>]
 
 """Get tags from odel """
->> Human.objects.get_tags()
+```python >>> Human.objects.get_tags()```
 [<Tag: tall - 1>, <Tag: man - 1>, <Tag: woman - 1>, <Tag: nice - 1>, <Tag: brunette - 2>]
 
->> c.add_tags('brunette')
-
->>c.get_related()
+```python >>> c.add_tags('brunette')```
+```python >>>c.get_related()```
 [<Human: John>, <Human: Mina>]
 
 """Get related items and custom filter """
->> c.get_related().filter(born_date__lt=datetime.datetime(1970,01,01))
+```python >>> c.get_related().filter(born_date__lt=datetime.datetime(1970,01,01))```
 [<Human: John>]
 
->> c.add_tags('woman,child')
-
->> r = Human.objects.create(name='Randy', born_date=datetime.datetime(2001,9,5))
-
->> r.add_tags('man,child')
-
->> r.get_related()
+```python >>> c.add_tags('woman,child')```
+```python >>> r = Human.objects.create(name='Randy', born_date=datetime.datetime(2001,9,5))```
+```python >>> r.add_tags('man,child')```
+```python >>> r.get_related()```
 [<Human: John>, <Human: Mina>, <Human: Cath>]
 
->> r.get_related().filter(born_date__gt=datetime.datetime(1999,01,01))
+```python >>> r.get_related().filter(born_date__gt=datetime.datetime(1999,01,01))```
 [<Human: Cath>]
 
->> Human.objects.get_related_by_tags('child')
+```python >>> Human.objects.get_related_by_tags('child')```
 [<Human: Randy>, <Human: Cath>]
 
->> Human.objects.get_related_by_tags('child').filter(born_date__gt=datetime.datetime(2000,01,01))
+```python >>> Human.objects.get_related_by_tags('child').filter(born_date__gt=datetime.datetime(2000,01,01))```
 [<Human: Randy>]
 
->> r.get_related()
+```python >>> r.get_related()```
 [<Human: John>, <Human: Mina>, <Human: Cath>]
 
 """Use the Q object """
->> from django.db.models import Q
->> q = Q( born_date__gt=datetime.datetime(2000,01,01) )
+```python >>> from django.db.models import Q
+q = Q( born_date__gt=datetime.datetime(2000,01,01) )```
 
 """Get by tag 'monster' or born_date > 2000-01-01 """
->> Human.objects.get_related_by_tags_q('monster', q)
+
+```python >>> Human.objects.get_related_by_tags_q('monster', q)```
 [<Human: Randy>]
 
